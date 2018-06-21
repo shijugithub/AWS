@@ -1,1 +1,70 @@
-a
+Parameters:
+    theAvailabilityZone:
+        Description: Availablility Zones to choose from
+        Type: AWS::EC2::AvailabilityZone::Name
+    theImageId:
+        Description: The AIM id of host/os
+        Type: String
+        Default: ami-14c5486b
+        AllowedValues: 
+            - ami-14c5486b
+            - ami-afd15ed0        
+    theInstanceType:
+        Description: The type of instance
+        Type: String
+        AllowedValues: 
+            - t2.micro
+            - t1.micro
+    theUserData:
+        Description: The commands to be added after deployment in base64 encoded form
+        Type: String
+        Default: IyEvYmluL2Jhc2gNCnl1bSBpbnN0YWxsIGh0dHBkIC15DQplY2hvICJIZWxsbyBTaGlqdSBhbG9uZSIgPiAvdmFyL3d3dy9odG1sL2luZGV4Lmh0bWwNCnNlcnZpY2UgaHR0cGQgcmVzdGFydA0KY2hrY29uZmlnIGh0dHBkIG9u
+    theSecurityGroupsIds:
+        Description: Security Groups IDs to choose from.
+        Type: AWS::EC2::SecurityGroup::Id
+    theSize:
+        Description: SIze of the new volume
+        Type: String
+        Default: 1
+        
+
+Resources:
+    myEC2instance:
+        Type: AWS::EC2::Instance
+        Properties:
+            AvailabilityZone: !Ref theAvailabilityZone
+            ImageId: !Ref theImageId
+            InstanceType: !Ref theInstanceType
+            SecurityGroupIds: 
+                - !Ref theSecGroup
+                - !Ref theSecurityGroupsIds
+            UserData: !Ref theUserData
+            Volumes:
+                -
+                    Device: /dev/sdf
+                    VolumeId: !Ref MyVolume
+
+        
+    MyVolume:
+        Type: "AWS::EC2::Volume"
+        Properties:
+            AvailabilityZone: !Ref theAvailabilityZone
+            Size: !Ref theSize
+            VolumeType: gp2
+
+    theSecGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties: 
+            GroupName: SecViaCF
+            GroupDescription: "Created via CF"
+            SecurityGroupIngress:
+            - IpProtocol: tcp
+              FromPort: '80'
+              ToPort: '80'
+              CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+            - IpProtocol: tcp
+              FromPort: '80'
+              ToPort: '80'
+              CidrIp: 0.0.0.0/0            
+            VpcId: vpc-97c56dec
